@@ -1,0 +1,6 @@
+{
+  "name": "શ્રી સ્વામિનારાયણ મહિલા સંપ્રદાય પોર્ટલ",
+  "description": "શ્રી સ્વામિનારાયણ મહિલા સંપ્રદાય - સભ્ય પ્રોફાઇલ, પારિવારિક વિગતો, જમણવાર આયોજન, દાન ભંડોળ, સભા શેડ્યૂલ અને સમિતિ ડિરેક્ટરી પોર્ટલ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

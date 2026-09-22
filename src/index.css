@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-gujarati: 'Kohinoor Gujarati', 'Noto Sans Gujarati', 'Gujarati Sangam MN', 'Shruti', sans-serif;
+    --font-chirp: 'Chirp', -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-gujarati);
+    background-color: #fdfaf6;
+    color: #292524;
+  }
+}
+
+.font-gujarati {
+  font-family: 'Kohinoor Gujarati', 'Noto Sans Gujarati', 'Gujarati Sangam MN', 'Shruti', system-ui, sans-serif;
+}
+
+.font-chirp {
+  font-family: 'Chirp', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+.font-serif-gujarati {
+  font-family: 'Noto Serif Gujarati', 'Kohinoor Gujarati', serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #fdf6ec;
+}
+::-webkit-scrollbar-thumb {
+  background: #e09f3e;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c97a18;
+}
+
+/* Print specific styling for donation receipt */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: 2px solid #b45309 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
