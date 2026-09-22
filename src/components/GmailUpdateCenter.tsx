@@ -184,8 +184,8 @@ export default function GmailUpdateCenter({
   const loadTemplate = (category: 'sabha_donor' | 'sabha_no_donor' | 'donation' | 'jamanwar') => {
     setActiveTemplateCategory(category);
     if (category === 'sabha_donor') {
-      // Mahila Sabha where prasad is sponsored by a donor (includes Donor Name and Amount)
-      setCustomSubject('મહિલા સત્સંગ સભા & પ્રસાદ સેવા: રવિવારીય વિશેષ સભા (પ્રસાદ દાતાશ્રી સહયોગ)');
+      // Mahila Sabha where prasad is sponsored by a donor (Subject strictly matches Sabha Title)
+      setCustomSubject('રવિવારીય વિશેષ મહિલા સત્સંગ સભા & વચનામૃત રહસ્ય કથા');
       setCustomBody(
 `શ્રી સ્વામિનારાયણ મહિલા સંપ્રદાય
 સત્સંગ સભા આમંત્રણ પત્રિકા
@@ -198,7 +198,10 @@ export default function GmailUpdateCenter({
 • સભાનું નામ: રવિવારીય વિશેષ મહિલા સત્સંગ સભા & વચનામૃત રહસ્ય કથા
 • તારીખ & વાર: ${new Date().toISOString().split('T')[0]} (રવિવાર)
 • સમયગાળો: બપોરે ૦૩:૦૦ થી ૦૫:૩૦ કલાકે
-• મુખ્ય વક્તા: પૂજ્ય સાંખ્યયોગી કંચનબા (વરિષ્ઠ સાંખ્યયોગી વિદુષી બહેન)
+• મુખ્ય વક્તા: પૂજ્ય સાંખ્યયોગી કંચનબા
+• હોદ્દો / પદવી: વરિષ્ઠ સાંખ્યયોગી વિદુષી બહેન
+• આશ્રમ / કેન્દ્ર: શ્રી લક્ષ્મીનારાયણ દેવ મહિલા આશ્રમ, વડતાલ
+• સહ-સંચાલિકા બહેનો: હેપ્પીબેન કાનાણી, રેખાબેન સાંગાણી, મીનાક્ષીબેન ગજેરા
 • સભા યુનિફોર્મ: લાલ / મરૂન કલરની સાડી (પરંપરાગત ઉત્સવ પરિધાન)
 • પ્રસાદ અર્પણ દાતાશ્રી: હેપ્પીબેન ભાવિનકુમાર કાનાણી
 • પ્રસાદ અર્પણ સેવા રકમ: ₹૨૧,૦૦૦
@@ -215,8 +218,8 @@ export default function GmailUpdateCenter({
 મોકલનાર: bhaktanisamparadayofficial@gmail.com`
       );
     } else if (category === 'sabha_no_donor') {
-      // Mahila Sabha where prasad has NO specific donor (only sabha prasad items listed)
-      setCustomSubject('મહિલા સત્સંગ સભા આયોજન: પવિત્ર એકાદશી ઉપવાસ મહિમા & સ્વાધ્યાય સભા');
+      // Mahila Sabha where prasad has NO specific donor (Subject strictly matches Sabha Title)
+      setCustomSubject('પવિત્ર એકાદશી ઉપવાસ મહિમા & શિક્ષાપત્રી સ્વાધ્યાય સભા');
       setCustomBody(
 `શ્રી સ્વામિનારાયણ મહિલા સંપ્રદાય
 સત્સંગ સભા આમંત્રણ પત્રિકા
@@ -229,7 +232,10 @@ export default function GmailUpdateCenter({
 • સભાનું નામ: પવિત્ર એકાદશી ઉપવાસ મહિમા & શિક્ષાપત્રી સ્વાધ્યાય સભા
 • તારીખ & વાર: ${new Date().toISOString().split('T')[0]} (મંગળવાર)
 • સમયગાળો: બપોરે ૦૨:૩૦ થી ૦૫:૦૦ કલાકે
-• મુખ્ય વક્તા: પૂજ્ય સાંખ્યયોગી હર્ષિદાબા (ધર્મવિદ્યા પ્રવીણા બહેન)
+• મુખ્ય વક્તા: પૂજ્ય સાંખ્યયોગી હર્ષિદાબા
+• હોદ્દો / પદવી: ધર્મવિદ્યા પ્રવીણા બહેન
+• આશ્રમ / કેન્દ્ર: શ્રી સ્વામિનારાયણ મહિલા સંસ્કાર કેન્દ્ર, ભુજ-કચ્છ
+• સહ-સંચાલિકા બહેનો: જાગૃતિબેન પટેલ, હંસાબેન વેકરીયા
 • સભા યુનિફોર્મ: પીળા / કેસરી રંગની સાડી (સભા પરિધાન)
 • સભા પ્રસાદ વાનગીઓ: સુખડી પ્રસાદ, બટાકા પૌંઆ, પંચામૃત
 • સભા વિષય / રહસ્ય: શિક્ષાપત્રી શ્લોક ૭૯ થી ૮૪: મહિલા ભક્તો માટે સદાચાર અને ધર્મપાલન
@@ -311,7 +317,7 @@ export default function GmailUpdateCenter({
             if (parts.length >= 2) {
               const label = parts[0];
               const value = parts.slice(1).join(':');
-              const isHighlight = label.includes('દાતા') || label.includes('રકમ') || label.includes('વાનગી');
+              const isHighlight = label.includes('દાતા') || label.includes('રકમ') || label.includes('વાનગી') || label.includes('હોદ્દો') || label.includes('સંચાલિકા');
               return (
                 <div 
                   key={idx} 

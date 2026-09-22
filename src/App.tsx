@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   MahilaMember, 
   DonationRecord, 
@@ -14,6 +14,16 @@ import {
   INITIAL_OFFICERS, 
   INITIAL_NOTIFICATIONS 
 } from './data/initialData';
+import { testFirebaseConnection } from './firebase';
+import { 
+  initializeFirestoreSeedData, 
+  subscribeToAllCollections, 
+  saveMemberToFirestore, 
+  saveDonationToFirestore, 
+  saveJamanwarToFirestore, 
+  saveSabhaToFirestore, 
+  saveNotificationToFirestore 
+} from './services/firestoreService';
 
 import Header from './components/Header';
 import DashboardOverview from './components/DashboardOverview';
@@ -44,6 +54,47 @@ export default function App() {
   const [sabhas, setSabhas] = useState<SabhaEvent[]>(INITIAL_SABHA_EVENTS);
   const [officers] = useState(INITIAL_OFFICERS);
   const [notifications, setNotifications] = useState<EmailNotification[]>(INITIAL_NOTIFICATIONS);
+  const [firebaseConnected, setFirebaseConnected] = useState<boolean>(false);
+
+  // Initialize and subscribe to Firebase
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
+    async function setupFirebase() {
+      const isOnline = await testFirebaseConnection();
+      setFirebaseConnected(isOnline);
+
+      if (isOnline) {
+        // Ensure collections are seeded if empty
+        await initializeFirestoreSeedData();
+
+        // Subscribe to live updates
+        unsubscribe = subscribeToAllCollections({
+          onMembers: (liveMembers) => {
+            if (liveMembers.length > 0) setMembers(liveMembers);
+          },
+          onDonations: (liveDonations) => {
+            if (liveDonations.length > 0) setDonations(liveDonations);
+          },
+          onJamanwars: (liveJamanwars) => {
+            if (liveJamanwars.length > 0) setJamanwars(liveJamanwars);
+          },
+          onSabhas: (liveSabhas) => {
+            if (liveSabhas.length > 0) setSabhas(liveSabhas);
+          },
+          onNotifications: (liveNotifs) => {
+            if (liveNotifs.length > 0) setNotifications(liveNotifs);
+          }
+        });
+      }
+    }
+
+    setupFirebase();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   // Modals & Popups
   const [activeReceiptDonation, setActiveReceiptDonation] = useState<DonationRecord | null>(null);
@@ -87,6 +138,7 @@ export default function App() {
     };
 
     setNotifications(prev => [newNotif, ...prev]);
+    saveNotificationToFirestore(newNotif);
     showToast(
       'Gmail અપડેટ મોકલાયું!',
       `${recipient} પર "${subject}" ઈમેઈલ સૂચના સફળતાપૂર્વક મોકલાઈ.`
@@ -106,6 +158,7 @@ export default function App() {
     setMembers(prev => [newMember, ...prev]);
     setCurrentMemberId(newMember.id);
     setShowNewMemberModal(false);
+    saveMemberToFirestore(newMember);
 
     // Automatic Gmail Notification
     addGmailNotification(
@@ -143,6 +196,7 @@ export default function App() {
 
   const handleUpdateMember = (updated: MahilaMember) => {
     setMembers(prev => prev.map(m => m.id === updated.id ? updated : m));
+    saveMemberToFirestore(updated);
     showToast('પ્રોફાઇલ અપડેટ થઈ!', 'સભ્ય અને પરિવારની વિગતો સાચવી લેવાઈ છે.');
 
     const familySummary = updated.familyMembers && updated.familyMembers.length > 0
@@ -179,6 +233,7 @@ ${familySummary}
     setDonations(prev => [newDonation, ...prev]);
     setShowDonateModal(false);
     setActiveReceiptDonation(newDonation);
+    saveDonationToFirestore(newDonation);
 
     // Automatic Gmail Notification
     addGmailNotification(
@@ -213,6 +268,7 @@ ${familySummary}
   const handleAddJamanwar = (newPlan: JamanwarPlan) => {
     setJamanwars(prev => [newPlan, ...prev]);
     setShowJamanwarModal(false);
+    saveJamanwarToFirestore(newPlan);
 
     // Automatic Gmail Notification
     const menuSummary = newPlan.menu.map(m => `• ${m.category}: ${m.items.join(', ')}`).join('\n');
@@ -256,6 +312,7 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
   ) => {
     setSabhas(prev => [newSabha, ...prev]);
     setShowSabhaModal(false);
+    saveSabhaToFirestore(newSabha);
 
     // If prasad has an expense amount, record it as a deduction from fund
     if (prasadExpenseInfo && prasadExpenseInfo.amount > 0) {
@@ -276,6 +333,7 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
       };
 
       setDonations(prev => [expenseDonationRecord, ...prev]);
+      saveDonationToFirestore(expenseDonationRecord);
 
       showToast(
         'સભા & પ્રસાદ ભંડોળ નોંધાયું!',
@@ -305,10 +363,14 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
     }
 
     const uniformDetails = newSabha.uniform ? `\n• સભા યુનિફોર્મ (ડ્રેસકોડ): ${newSabha.uniform}` : '';
+    const speakerHoddo = newSabha.conductedBy.title ? `\n• હોદ્દો / પદવી: ${newSabha.conductedBy.title}` : '';
+    const ashramDetail = newSabha.conductedBy.ashramOrCity ? `\n• આશ્રમ / કેન્દ્ર: ${newSabha.conductedBy.ashramOrCity}` : '';
+    const coordinatorsDetails = (newSabha.coordinators && newSabha.coordinators.length > 0)
+      ? `\n• સહ-સંચાલિકા બહેનો: ${newSabha.coordinators.join(', ')}`
+      : '';
 
-    const sabhaEmailSubject = hasDonor
-      ? `મહિલા સત્સંગ સભા & પ્રસાદ સેવા: ${newSabha.title} (પ્રસાદ દાતા: ${donorName} - ₹${donorAmount.toLocaleString('en-IN')})`
-      : `મહિલા સત્સંગ સભા આયોજન: ${newSabha.title} (${newSabha.date} - ${newSabha.dayOfWeek || ''})`;
+    // સભા નો વિષય ટાઇટલ માં સભાનું નામ શીર્ષક માં ઉમેરાય તેજ આવવું જોઈએ (આ માત્ર સભા પૂરતું કરો અન્ય માં નહીં)
+    const sabhaEmailSubject = newSabha.title;
 
     addGmailNotification(
       sabhaEmailSubject,
@@ -323,7 +385,7 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
 • સભાનું નામ: ${newSabha.title}
 • તારીખ & વાર: ${newSabha.date} (${newSabha.dayOfWeek || ''})
 • સમયગાળો: ${newSabha.time}
-• મુખ્ય વક્તા: ${newSabha.conductedBy.name} (${newSabha.conductedBy.title}, ${newSabha.conductedBy.ashramOrCity})${uniformDetails}${prasadLines}
+• મુખ્ય વક્તા: ${newSabha.conductedBy.name}${speakerHoddo}${ashramDetail}${coordinatorsDetails}${uniformDetails}${prasadLines}
 • સભા વિષય / રહસ્ય: ${newSabha.topic}
 • કીર્તન ભક્તિ: ${newSabha.kirtanBhakti}
 • સભા સ્થળ: ${newSabha.venue}
@@ -344,14 +406,16 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
       if (s.id === sabhaId) {
         const isRsvpd = !s.isUserRsvpd;
         const countDiff = isRsvpd ? 1 : -1;
-        if (isRsvpd) {
-          showToast('હાજરી નોંધાઈ ગઈ!', `${s.title}માં આપની હાજરી કન્ફર્મ થઈ.`);
-        }
-        return {
+        const updatedSabha = {
           ...s,
           isUserRsvpd: isRsvpd,
           rsvpCount: Math.max(0, s.rsvpCount + countDiff)
         };
+        saveSabhaToFirestore(updatedSabha);
+        if (isRsvpd) {
+          showToast('હાજરી નોંધાઈ ગઈ!', `${s.title}માં આપની હાજરી કન્ફર્મ થઈ.`);
+        }
+        return updatedSabha;
       }
       return s;
     }));
@@ -389,6 +453,7 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
         onOpenDonateModal={() => setShowDonateModal(true)}
         onOpenJamanwarModal={() => setShowJamanwarModal(true)}
         notifications={notifications}
+        firebaseConnected={firebaseConnected}
       />
 
       {/* Main Body Content Container */}

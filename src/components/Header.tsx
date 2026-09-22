@@ -11,8 +11,7 @@ import {
   Plus, 
   ChevronDown,
   Sparkles,
-  Bell,
-  Database
+  Bell
 } from 'lucide-react';
 
 interface Props {
@@ -24,8 +23,8 @@ interface Props {
   onOpenNewMemberModal: () => void;
   onOpenDonateModal: () => void;
   onOpenJamanwarModal: () => void;
-  onOpenBackupModal: () => void;
   notifications: EmailNotification[];
+  firebaseConnected?: boolean;
 }
 
 export default function Header({
@@ -37,8 +36,8 @@ export default function Header({
   onOpenNewMemberModal,
   onOpenDonateModal,
   onOpenJamanwarModal,
-  onOpenBackupModal,
-  notifications
+  notifications,
+  firebaseConnected = true
 }: Props) {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
@@ -65,12 +64,11 @@ export default function Header({
           <span>શ્રી સ્વામિનારાયણ મહિલા સંપ્રદાય - સત્સંગ, જમણવાર અને દાન વ્યવસ્થાપન પોર્ટલ</span>
         </div>
         <div className="hidden md:flex items-center gap-3 font-chirp text-[11px]">
-          <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-100 border border-emerald-300/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
-            <span>કાયમી ડેટાબેઝ સક્રિય (Auto-Saved)</span>
+          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/20">
+            <span className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? 'bg-emerald-300' : 'bg-amber-300'} animate-pulse`}></span>
+            <span>{firebaseConnected ? 'Firebase Real-time સિંક' : 'ઑફલાઇન કેશ'}</span>
           </span>
-          <span>Gmail Integration: bhaktidevani81@gmail.com</span>
-          <span className="px-2 py-0.5 rounded-full bg-white/20">લાઈવ ગેટવે સક્રિય</span>
+          <span>Gmail: bhaktidevani81@gmail.com</span>
         </div>
       </div>
 
@@ -119,17 +117,6 @@ export default function Header({
 
         {/* Right side: Quick Action Buttons & Current Profile Switcher */}
         <div className="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
-          {/* Database & Backup Button */}
-          <button
-            onClick={onOpenBackupModal}
-            title="ડેટાબેઝ સુરક્ષા & બેકઅપ"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
-          >
-            <Database className="w-4 h-4 text-emerald-700" />
-            <span className="hidden lg:inline">ડેટાબેઝ & બેકઅપ</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          </button>
-
           {/* Quick Donate Button */}
           <button
             onClick={onOpenDonateModal}

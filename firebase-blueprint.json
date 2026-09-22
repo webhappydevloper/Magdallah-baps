@@ -1,0 +1,151 @@
+{
+  "entities": {
+    "MahilaMember": {
+      "title": "MahilaMember",
+      "description": "Registered female satsangi member with 6-digit number, personal and family details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "memberNumber": { "type": "string" },
+        "surname": { "type": "string" },
+        "firstName": { "type": "string" },
+        "fatherName": { "type": "string" },
+        "husbandName": { "type": "string" },
+        "motherName": { "type": "string" },
+        "age": { "type": "number" },
+        "dob": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "district": { "type": "string" },
+        "pincode": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "occupation": { "type": "string" },
+        "annualIncome": { "type": "string" },
+        "incomeType": { "type": "string" },
+        "mandalRole": { "type": "string" },
+        "joinDate": { "type": "string" },
+        "familyMembers": { "type": "array" },
+        "avatarColor": { "type": "string" },
+        "parentMemberNumber": { "type": "string" }
+      },
+      "required": ["id", "memberNumber", "surname", "firstName", "phone"]
+    },
+    "DonationRecord": {
+      "title": "DonationRecord",
+      "description": "Seva donation payment record or expense deduction with receipt and fund category",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "receiptNo": { "type": "string" },
+        "memberId": { "type": "string" },
+        "donorName": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "paymentMode": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "transactionRef": { "type": "string" },
+        "purposeNote": { "type": "string" },
+        "isVerified": { "type": "boolean" },
+        "isExpense": { "type": "boolean" }
+      },
+      "required": ["id", "receiptNo", "donorName", "amount", "category", "paymentMode", "date"]
+    },
+    "JamanwarPlan": {
+      "title": "JamanwarPlan",
+      "description": "Satsangi jamanwar meal sponsorship and menu planning schedule",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "hostName": { "type": "string" },
+        "memberId": { "type": "string" },
+        "occasion": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "mealType": { "type": "string" },
+        "amount": { "type": "number" },
+        "approxGuests": { "type": "number" },
+        "locationHall": { "type": "string" },
+        "menu": { "type": "array" },
+        "rasoiyaTeam": { "type": "string" },
+        "inchargeSister": { "type": "string" },
+        "notes": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "hostName", "occasion", "date", "mealType", "amount"]
+    },
+    "SabhaEvent": {
+      "title": "SabhaEvent",
+      "description": "Mahila Satsang Sabha schedule with speaker details, prasad sponsorship, and coordinators",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "date": { "type": "string" },
+        "dayOfWeek": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "time": { "type": "string" },
+        "conductedBy": { "type": "object" },
+        "coordinators": { "type": "array" },
+        "topic": { "type": "string" },
+        "kirtanBhakti": { "type": "string" },
+        "venue": { "type": "string" },
+        "mode": { "type": "string" },
+        "expectedAttendees": { "type": "number" },
+        "rsvpCount": { "type": "number" },
+        "isUserRsvpd": { "type": "boolean" },
+        "uniform": { "type": "string" },
+        "prasadSource": { "type": "string" },
+        "linkedDonationId": { "type": "string" },
+        "prasadDonorName": { "type": "string" },
+        "prasadDonorAmount": { "type": "number" },
+        "prasadMenu": { "type": "array" },
+        "dishPrice": { "type": "number" },
+        "memberCount": { "type": "number" },
+        "prasadExpense": { "type": "number" }
+      },
+      "required": ["id", "title", "date", "time", "venue", "topic"]
+    },
+    "EmailNotification": {
+      "title": "EmailNotification",
+      "description": "Gmail notification log for registrations, donations, jamanwar, and sabha invitations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sender": { "type": "string" },
+        "recipient": { "type": "string" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "recipient", "subject", "body", "date", "type"]
+    }
+  },
+  "firestore": {
+    "/members/{memberId}": {
+      "schema": "MahilaMember",
+      "description": "Registered Mahila Mandal members"
+    },
+    "/donations/{donationId}": {
+      "schema": "DonationRecord",
+      "description": "Donation records and fund expenses"
+    },
+    "/jamanwars/{jamanwarId}": {
+      "schema": "JamanwarPlan",
+      "description": "Jamanwar plans and menus"
+    },
+    "/sabhas/{sabhaId}": {
+      "schema": "SabhaEvent",
+      "description": "Mahila Satsang Sabha events"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "EmailNotification",
+      "description": "Email notification history and queue"
+    }
+  }
+}

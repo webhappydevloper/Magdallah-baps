@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global deny-by-default safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Members collection
+    match /members/{memberId} {
+      allow read: if true;
+      allow create: if isValidId(memberId)
+        && request.resource.data.memberNumber is string
+        && request.resource.data.firstName is string
+        && request.resource.data.phone is string;
+      allow update: if isValidId(memberId)
+        && request.resource.data.memberNumber is string;
+      allow delete: if false;
+    }
+
+    // Donations & Seva fund collection
+    match /donations/{donationId} {
+      allow read: if true;
+      allow create: if isValidId(donationId)
+        && request.resource.data.donorName is string
+        && request.resource.data.amount is number
+        && request.resource.data.amount >= 0;
+      allow update: if isValidId(donationId);
+      allow delete: if false;
+    }
+
+    // Jamanwar schedule collection
+    match /jamanwars/{jamanwarId} {
+      allow read: if true;
+      allow create: if isValidId(jamanwarId)
+        && request.resource.data.hostName is string
+        && request.resource.data.amount is number;
+      allow update: if isValidId(jamanwarId);
+      allow delete: if false;
+    }
+
+    // Mahila Sabha schedule collection
+    match /sabhas/{sabhaId} {
+      allow read: if true;
+      allow create: if isValidId(sabhaId)
+        && request.resource.data.title is string
+        && request.resource.data.date is string;
+      allow update: if isValidId(sabhaId);
+      allow delete: if false;
+    }
+
+    // Gmail Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow create: if isValidId(notificationId)
+        && request.resource.data.recipient is string
+        && request.resource.data.subject is string;
+      allow update: if isValidId(notificationId);
+      allow delete: if false;
+    }
+  }
+}
