@@ -31,6 +31,31 @@ const COLLECTIONS = {
 } as const;
 
 /**
+ * Recursively strips undefined fields from an object so Firestore setDoc never throws
+ * "Function setDoc() called with invalid data. Unsupported field value: undefined".
+ */
+export function cleanFirestoreData<T extends Record<string, any>>(data: T): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (value === undefined) {
+      continue;
+    }
+    if (value !== null && typeof value === 'object' && !(value instanceof Date)) {
+      if (Array.isArray(value)) {
+        result[key] = value
+          .filter(item => item !== undefined)
+          .map(item => (item !== null && typeof item === 'object' && !(item instanceof Date) ? cleanFirestoreData(item) : item));
+      } else {
+        result[key] = cleanFirestoreData(value);
+      }
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+/**
  * Initialize Firestore with default seed data if collections are currently empty.
  */
 export async function initializeFirestoreSeedData(): Promise<void> {
@@ -39,7 +64,7 @@ export async function initializeFirestoreSeedData(): Promise<void> {
     if (membersSnap.empty) {
       console.log('Seeding initial members to Firestore...');
       for (const member of INITIAL_MEMBERS) {
-        await setDoc(doc(db, COLLECTIONS.MEMBERS, member.id), member);
+        await setDoc(doc(db, COLLECTIONS.MEMBERS, member.id), cleanFirestoreData(member));
       }
     }
 
@@ -47,7 +72,7 @@ export async function initializeFirestoreSeedData(): Promise<void> {
     if (donationsSnap.empty) {
       console.log('Seeding initial donations to Firestore...');
       for (const donation of INITIAL_DONATIONS) {
-        await setDoc(doc(db, COLLECTIONS.DONATIONS, donation.id), donation);
+        await setDoc(doc(db, COLLECTIONS.DONATIONS, donation.id), cleanFirestoreData(donation));
       }
     }
 
@@ -55,7 +80,7 @@ export async function initializeFirestoreSeedData(): Promise<void> {
     if (jamanwarsSnap.empty) {
       console.log('Seeding initial jamanwar plans to Firestore...');
       for (const plan of INITIAL_JAMANWAR_PLANS) {
-        await setDoc(doc(db, COLLECTIONS.JAMANWARS, plan.id), plan);
+        await setDoc(doc(db, COLLECTIONS.JAMANWARS, plan.id), cleanFirestoreData(plan));
       }
     }
 
@@ -63,7 +88,7 @@ export async function initializeFirestoreSeedData(): Promise<void> {
     if (sabhasSnap.empty) {
       console.log('Seeding initial sabha events to Firestore...');
       for (const sabha of INITIAL_SABHA_EVENTS) {
-        await setDoc(doc(db, COLLECTIONS.SABHAS, sabha.id), sabha);
+        await setDoc(doc(db, COLLECTIONS.SABHAS, sabha.id), cleanFirestoreData(sabha));
       }
     }
 
@@ -71,7 +96,7 @@ export async function initializeFirestoreSeedData(): Promise<void> {
     if (notifsSnap.empty) {
       console.log('Seeding initial notifications to Firestore...');
       for (const notif of INITIAL_NOTIFICATIONS) {
-        await setDoc(doc(db, COLLECTIONS.NOTIFICATIONS, notif.id), notif);
+        await setDoc(doc(db, COLLECTIONS.NOTIFICATIONS, notif.id), cleanFirestoreData(notif));
       }
     }
   } catch (error) {
@@ -168,7 +193,7 @@ export function subscribeToAllCollections(callbacks: {
 // Write Operations with error handlers
 export async function saveMemberToFirestore(member: MahilaMember): Promise<void> {
   try {
-    await setDoc(doc(db, COLLECTIONS.MEMBERS, member.id), member);
+    await setDoc(doc(db, COLLECTIONS.MEMBERS, member.id), cleanFirestoreData(member));
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `${COLLECTIONS.MEMBERS}/${member.id}`);
   }
@@ -176,7 +201,7 @@ export async function saveMemberToFirestore(member: MahilaMember): Promise<void>
 
 export async function saveDonationToFirestore(donation: DonationRecord): Promise<void> {
   try {
-    await setDoc(doc(db, COLLECTIONS.DONATIONS, donation.id), donation);
+    await setDoc(doc(db, COLLECTIONS.DONATIONS, donation.id), cleanFirestoreData(donation));
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `${COLLECTIONS.DONATIONS}/${donation.id}`);
   }
@@ -184,7 +209,7 @@ export async function saveDonationToFirestore(donation: DonationRecord): Promise
 
 export async function saveJamanwarToFirestore(jamanwar: JamanwarPlan): Promise<void> {
   try {
-    await setDoc(doc(db, COLLECTIONS.JAMANWARS, jamanwar.id), jamanwar);
+    await setDoc(doc(db, COLLECTIONS.JAMANWARS, jamanwar.id), cleanFirestoreData(jamanwar));
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `${COLLECTIONS.JAMANWARS}/${jamanwar.id}`);
   }
@@ -192,7 +217,7 @@ export async function saveJamanwarToFirestore(jamanwar: JamanwarPlan): Promise<v
 
 export async function saveSabhaToFirestore(sabha: SabhaEvent): Promise<void> {
   try {
-    await setDoc(doc(db, COLLECTIONS.SABHAS, sabha.id), sabha);
+    await setDoc(doc(db, COLLECTIONS.SABHAS, sabha.id), cleanFirestoreData(sabha));
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `${COLLECTIONS.SABHAS}/${sabha.id}`);
   }
@@ -200,7 +225,7 @@ export async function saveSabhaToFirestore(sabha: SabhaEvent): Promise<void> {
 
 export async function saveNotificationToFirestore(notification: EmailNotification): Promise<void> {
   try {
-    await setDoc(doc(db, COLLECTIONS.NOTIFICATIONS, notification.id), notification);
+    await setDoc(doc(db, COLLECTIONS.NOTIFICATIONS, notification.id), cleanFirestoreData(notification));
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `${COLLECTIONS.NOTIFICATIONS}/${notification.id}`);
   }

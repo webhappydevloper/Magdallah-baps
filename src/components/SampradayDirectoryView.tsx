@@ -13,6 +13,7 @@ import {
   Check,
   Hash
 } from 'lucide-react';
+import { useThakorjiImage } from '../utils/imageStore';
 
 interface Props {
   officers: SampradayOfficer[];
@@ -27,6 +28,7 @@ export default function SampradayDirectoryView({
   onSelectMember,
   onOpenNewMemberModal
 }: Props) {
+  const [thakorjiImg] = useThakorjiImage();
   const [activeTab, setActiveTab] = useState<'officers' | 'members'>('officers');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
@@ -57,11 +59,11 @@ export default function SampradayDirectoryView({
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-amber-800 via-stone-800 to-amber-900 text-white rounded-3xl p-6 sm:p-8 shadow-lg border border-amber-600/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-start gap-4">
-          <div className="hidden sm:flex w-16 h-16 rounded-2xl bg-white p-1.5 shrink-0 items-center justify-center border-2 border-amber-300 shadow-md">
+          <div className="hidden sm:flex w-16 h-16 rounded-2xl bg-amber-50 p-1 shrink-0 items-center justify-center border-2 border-amber-300 ring-2 ring-amber-400/30 shadow-md overflow-hidden">
             <img 
-              src="/baps-logo.png" 
-              alt="BAPS Swaminarayan Sanstha Logo" 
-              className="w-full h-full object-contain bg-white rounded-xl" 
+              src={thakorjiImg || "/swaminarayan-logo.png"} 
+              alt="શ્રી સ્વામિનારાયણ ભગવાન" 
+              className="w-full h-full object-cover rounded-xl" 
               referrerPolicy="no-referrer" 
             />
           </div>

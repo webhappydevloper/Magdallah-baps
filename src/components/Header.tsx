@@ -11,8 +11,13 @@ import {
   Plus, 
   ChevronDown,
   Sparkles,
-  Bell
+  Bell,
+  CheckCircle2,
+  ShieldCheck
 } from 'lucide-react';
+import { User } from 'firebase/auth';
+import GoogleSignInButton from './GoogleSignInButton';
+import { useThakorjiImage } from '../utils/imageStore';
 
 interface Props {
   currentTab: string;
@@ -25,6 +30,11 @@ interface Props {
   onOpenJamanwarModal: () => void;
   notifications: EmailNotification[];
   firebaseConnected?: boolean;
+  authUser?: User | null;
+  authToken?: string | null;
+  onGoogleSignIn?: () => void;
+  onSignOut?: () => void;
+  isSigningIn?: boolean;
 }
 
 export default function Header({
@@ -37,9 +47,15 @@ export default function Header({
   onOpenDonateModal,
   onOpenJamanwarModal,
   notifications,
-  firebaseConnected = true
+  firebaseConnected = true,
+  authUser,
+  authToken,
+  onGoogleSignIn,
+  onSignOut,
+  isSigningIn = false
 }: Props) {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [thakorjiImg] = useThakorjiImage();
 
   const tabs = [
     { id: 'dashboard', label: 'ડેશબોર્ડ', icon: LayoutDashboard },
@@ -48,61 +64,59 @@ export default function Header({
     { id: 'jamanwar', label: 'જમણવાર & મેનુ', icon: UtensilsCrossed },
     { id: 'sabha', label: 'મહિલા સભા આયોજન', icon: CalendarDays },
     { id: 'directory', label: 'સમિતિ & સભ્યો', icon: Users },
-    { id: 'gmail', label: 'Gmail અપડેટ્સ', icon: Mail, badge: notifications.length }
+    { 
+      id: 'gmail', 
+      label: 'Gmail & સૂચનાઓ', 
+      icon: Mail, 
+      badge: notifications.length,
+      isLive: Boolean(authToken)
+    }
   ];
 
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-amber-200/80 sticky top-0 z-40 shadow-xs font-gujarati no-print">
-      {/* Top sacred banner */}
-      <div className="bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 text-white px-4 py-1.5 text-xs text-center font-medium tracking-wide flex items-center justify-between">
-        <div className="hidden sm:flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse"></span>
-          <span>॥ શ્રી સ્વામિનારાયણો વિજયતેતરામ્ ॥</span>
-        </div>
-        <div className="mx-auto sm:mx-0 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-          <span>શ્રી સ્વામિનારાયણ મહિલા સંપ્રદાય - સત્સંગ, જમણવાર અને દાન વ્યવસ્થાપન પોર્ટલ</span>
-        </div>
-        <div className="hidden md:flex items-center gap-3 font-chirp text-[11px]">
-          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/20">
-            <span className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? 'bg-emerald-300' : 'bg-amber-300'} animate-pulse`}></span>
-            <span>{firebaseConnected ? 'Firebase Real-time સિંક' : 'ઑફલાઇન કેશ'}</span>
-          </span>
-          <span>Gmail: bhaktidevani81@gmail.com</span>
-        </div>
-      </div>
-
       {/* Main Brand & Actions Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Logo & Portal Title */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentTab('dashboard')}>
-            {/* BAPS Official Logo Badge with White Background */}
-            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white p-1 shadow-md flex items-center justify-center shrink-0 border border-amber-300">
+            {/* Shree Swaminarayan Bhagwan Divine Logo Badge */}
+            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-amber-50 p-0.5 shadow-md flex items-center justify-center shrink-0 border border-amber-300 ring-2 ring-amber-400/30 overflow-hidden">
               <img 
-                src="/baps-logo.png" 
-                alt="BAPS Swaminarayan Sanstha Logo" 
-                className="w-full h-full object-contain bg-white rounded-xl" 
+                src={thakorjiImg || "/swaminarayan-logo.png"} 
+                alt="શ્રી સ્વામિનારાયણ ભગવાન" 
+                className="w-full h-full object-cover rounded-xl" 
                 referrerPolicy="no-referrer" 
               />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl sm:text-2xl font-bold text-amber-950 tracking-tight leading-none font-serif-gujarati">
-                  શ્રી સ્વામિનારાયણ મહિલા સંપ્રદાય
+                  શ્રી સ્વામિનારાયણ ભક્તાણી સંપ્રદાય
                 </h1>
-                <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-100 text-amber-900 rounded-full border border-amber-300 font-chirp">
-                  મહિલા મંડળ
+                <span className="hidden sm:inline-block text-[11px] font-bold tracking-wider px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded-full border border-amber-300 font-serif-gujarati">
+                  મગદલ્લાહ-સુરત
                 </span>
               </div>
-              <p className="text-xs text-stone-500 mt-1">
-                સભ્ય નોંધણી • પારિવારિક વિગતો • જમણવાર મેનુ • દાન પાવતી • સભા શેડ્યૂલ
+              <p className="text-xs text-amber-800 font-medium mt-1">
+                શ્રી પરમકૃપાળુ સ્વામીનારાયણ મહારાજ ની વહાલી ભક્તાણી
               </p>
             </div>
           </div>
 
           {/* Mobile Profile pill */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            {onGoogleSignIn && (
+              <GoogleSignInButton
+                onSignIn={onGoogleSignIn}
+                isLoading={isSigningIn}
+                userEmail={authUser?.email}
+                userName={authUser?.displayName}
+                userPhoto={authUser?.photoURL}
+                onSignOut={onSignOut}
+                variant="compact"
+              />
+            )}
             <button
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-900"
@@ -115,8 +129,24 @@ export default function Header({
           </div>
         </div>
 
-        {/* Right side: Quick Action Buttons & Current Profile Switcher */}
+        {/* Right side: Quick Action Buttons, Google Sign In & Current Profile Switcher */}
         <div className="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
+          {/* Official Google Sign In Button */}
+          {onGoogleSignIn && (
+            <div className="hidden sm:block">
+              <GoogleSignInButton
+                onSignIn={onGoogleSignIn}
+                isLoading={isSigningIn}
+                userEmail={authUser?.email}
+                userName={authUser?.displayName}
+                userPhoto={authUser?.photoURL}
+                onSignOut={onSignOut}
+                variant="compact"
+                label="Sign in with Google"
+              />
+            </div>
+          )}
+
           {/* Quick Donate Button */}
           <button
             onClick={onOpenDonateModal}
@@ -129,7 +159,7 @@ export default function Header({
           {/* Quick Jamanwar Booking */}
           <button
             onClick={onOpenJamanwarModal}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
           >
             <UtensilsCrossed className="w-4 h-4 text-amber-700" />
             <span>જમણવાર સેવા</span>
@@ -246,7 +276,10 @@ export default function Header({
                 >
                   <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-amber-700'}`} />
                   <span>{tab.label}</span>
-                  {tab.badge && tab.badge > 0 && (
+                  {tab.isLive && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Gmail કનેક્ટેડ"></span>
+                  )}
+                  {tab.badge !== undefined && tab.badge > 0 && (
                     <span className={`text-[10px] font-chirp px-1.5 py-0.2 rounded-full font-bold ${
                       isActive ? 'bg-white text-amber-700' : 'bg-amber-200 text-amber-900'
                     }`}>

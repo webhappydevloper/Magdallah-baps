@@ -49,6 +49,7 @@ export interface MahilaMember {
   incomeType: 'પરિવારની' | 'પોતાની' | 'સંયુક્ત';
   mandalRole: string;    // મંડળમાં હોદ્દો
   joinDate: string;      // જોડાયા તારીખ
+  joinedTimestamp?: number; // 72 કલાક માટે timestamp
   familyMembers: FamilyMember[]; // ઘરના સભ્યો
   avatarColor: string;
   parentMemberNumber?: string; // જોડાયેલ માતા/પિતાનો સભ્ય નંબર (જો હોય તો)

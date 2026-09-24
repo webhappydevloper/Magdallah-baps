@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { User } from 'firebase/auth';
 import { 
   MahilaMember, 
   DonationRecord, 
@@ -16,6 +17,11 @@ import {
 } from './data/initialData';
 import { testFirebaseConnection } from './firebase';
 import { 
+  initAuth, 
+  googleSignIn, 
+  logout 
+} from './services/authService';
+import { 
   initializeFirestoreSeedData, 
   subscribeToAllCollections, 
   saveMemberToFirestore, 
@@ -27,6 +33,7 @@ import {
 
 import Header from './components/Header';
 import DashboardOverview from './components/DashboardOverview';
+import { useThakorjiImage } from './utils/imageStore';
 import MemberProfileView from './components/MemberProfileView';
 import DonationFundView from './components/DonationFundView';
 import JamanwarView from './components/JamanwarView';
@@ -43,6 +50,7 @@ import NewSabhaModal from './components/NewSabhaModal';
 import { Sparkles, Mail, CheckCircle2, Heart } from 'lucide-react';
 
 export default function App() {
+  const [thakorjiImg] = useThakorjiImage();
   // Navigation
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
 
@@ -55,6 +63,49 @@ export default function App() {
   const [officers] = useState(INITIAL_OFFICERS);
   const [notifications, setNotifications] = useState<EmailNotification[]>(INITIAL_NOTIFICATIONS);
   const [firebaseConnected, setFirebaseConnected] = useState<boolean>(false);
+
+  // Google Workspace Auth & Gmail Session State
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  // Initialize and subscribe to Google Auth
+  useEffect(() => {
+    const unsubscribeAuth = initAuth((user, token) => {
+      setAuthUser(user);
+      setAuthToken(token);
+    });
+    return () => {
+      unsubscribeAuth();
+    };
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsSigningIn(true);
+      const res = await googleSignIn();
+      if (res) {
+        setAuthUser(res.user);
+        setAuthToken(res.accessToken);
+        showToast(
+          'Gmail કનેક્ટ થયું!',
+          `${res.user.email} સાથે સફળતાપૂર્વક સાઇન ઇન થયા.`
+        );
+      }
+    } catch (error: any) {
+      console.error('Sign in failed:', error);
+      showToast('સાઇન ઇન નિષ્ફળ', error.message || 'Google સાઇન ઇન થઈ શક્યું નથી.');
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+    setAuthUser(null);
+    setAuthToken(null);
+    showToast('લૉગ આઉટ', 'Google એકાઉન્ટ ડિસ્કનેક્ટ થયું.');
+  };
 
   // Initialize and subscribe to Firebase
   useEffect(() => {
@@ -454,6 +505,11 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
         onOpenJamanwarModal={() => setShowJamanwarModal(true)}
         notifications={notifications}
         firebaseConnected={firebaseConnected}
+        authUser={authUser}
+        authToken={authToken}
+        onGoogleSignIn={handleGoogleSignIn}
+        onSignOut={handleSignOut}
+        isSigningIn={isSigningIn}
       />
 
       {/* Main Body Content Container */}
@@ -475,8 +531,10 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
         {currentTab === 'profile' && (
           <MemberProfileView
             member={currentMember}
+            members={members}
             totalContributed={currentMemberContribution}
             onUpdateMember={handleUpdateMember}
+            onAddMember={handleAddMember}
             onOpenNewMemberModal={() => setShowNewMemberModal(true)}
             onOpenDonateModal={() => setShowDonateModal(true)}
           />
@@ -528,6 +586,8 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
             onSendCustomEmail={(to, su, bo, sender, type) => {
               addGmailNotification(su, bo, type || 'sabha_scheduled', to, sender);
             }}
+            authUser={authUser}
+            authToken={authToken}
           />
         )}
       </main>
@@ -537,26 +597,26 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-stone-800 pb-6 text-center md:text-left">
             <div className="flex items-center gap-3.5 justify-center md:justify-start">
-              <div className="w-13 h-13 rounded-2xl bg-white p-1 shrink-0 flex items-center justify-center border-2 border-amber-400/40 shadow-sm">
+              <div className="w-13 h-13 rounded-2xl bg-amber-50 p-1 shrink-0 flex items-center justify-center border-2 border-amber-400/40 ring-2 ring-amber-400/20 shadow-sm overflow-hidden">
                 <img 
-                  src="/baps-logo.png" 
-                  alt="BAPS Swaminarayan Sanstha Logo" 
-                  className="w-full h-full object-contain bg-white rounded-xl" 
+                  src={thakorjiImg || "/swaminarayan-logo.png"} 
+                  alt="શ્રી સ્વામિનારાયણ ભગવાન" 
+                  className="w-full h-full object-cover rounded-xl" 
                   referrerPolicy="no-referrer" 
                 />
               </div>
               <div>
                 <div className="text-xl font-bold text-amber-400 font-serif-gujarati">
-                  શ્રી સ્વામિનારાયણ મહિલા સંપ્રદાય મંડળ
+                  શ્રી સ્વામિનારાયણ ભક્તાણી સંપ્રદાય (મગદલ્લાહ-સુરત)
                 </div>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  સર્વ મહિલા આધ્યાત્મિક જાગૃતિ, સાત્વિક જમણવાર સેવા અને કલ્યાણકારી પ્રવૃત્તિઓ
+                  શ્રી પરમકૃપાળુ સ્વામીનારાયણ મહારાજ ની વહાલી ભક્તાણી
                 </p>
               </div>
             </div>
             <div className="text-xs text-stone-400 font-chirp text-center md:text-right">
               <div>મોકલનાર: bhaktanisamparadayofficial@gmail.com</div>
-              <div>પ્રાપ્તકર્તા: bhaktidevani81@gmail.com</div>
+              <div>પ્રાપ્તકર્તા: happykanani8@gmail.com</div>
               <div className="text-emerald-400 font-semibold mt-0.5">● Gmail Integration Live</div>
             </div>
           </div>
@@ -577,6 +637,10 @@ ${newPlan.notes || 'શુદ્ધ સાત્વિક અને નિયમ
           donation={activeReceiptDonation}
           member={members.find(m => m.id === activeReceiptDonation.memberId)}
           onClose={() => setActiveReceiptDonation(null)}
+          onOpenGmail={() => {
+            setActiveReceiptDonation(null);
+            setCurrentTab('gmail');
+          }}
         />
       )}
 

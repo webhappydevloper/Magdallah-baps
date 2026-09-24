@@ -16,6 +16,7 @@ import {
   Shirt,
   Utensils
 } from 'lucide-react';
+import { useThakorjiImage } from '../utils/imageStore';
 
 interface Props {
   sabhas: SabhaEvent[];
@@ -30,6 +31,7 @@ export default function SabhaScheduleView({
   onToggleRsvp,
   onOpenNewSabhaModal
 }: Props) {
+  const [thakorjiImg] = useThakorjiImage();
   const [filterMode, setFilterMode] = useState<string>('all');
 
   const filteredSabhas = sabhas.filter(s => {
@@ -42,11 +44,11 @@ export default function SabhaScheduleView({
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-emerald-800 via-teal-700 to-emerald-900 text-white rounded-3xl p-6 sm:p-8 shadow-lg border border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-start gap-4">
-          <div className="hidden sm:flex w-16 h-16 rounded-2xl bg-white p-1.5 shrink-0 items-center justify-center border-2 border-emerald-300 shadow-md">
+          <div className="hidden sm:flex w-16 h-16 rounded-2xl bg-amber-50 p-1 shrink-0 items-center justify-center border-2 border-amber-300 ring-2 ring-amber-400/30 shadow-md overflow-hidden">
             <img 
-              src="/baps-logo.png" 
-              alt="BAPS Swaminarayan Sanstha Logo" 
-              className="w-full h-full object-contain bg-white rounded-xl" 
+              src={thakorjiImg || "/swaminarayan-logo.png"} 
+              alt="શ્રી સ્વામિનારાયણ ભગવાન" 
+              className="w-full h-full object-cover rounded-xl" 
               referrerPolicy="no-referrer" 
             />
           </div>

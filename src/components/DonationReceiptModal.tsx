@@ -1,13 +1,16 @@
 import { DonationRecord, MahilaMember } from '../types';
-import { X, Printer, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { X, Printer, CheckCircle2, ShieldCheck, Mail } from 'lucide-react';
+import { useThakorjiImage } from '../utils/imageStore';
 
 interface Props {
   donation: DonationRecord;
   member?: MahilaMember;
   onClose: () => void;
+  onOpenGmail?: () => void;
 }
 
-export default function DonationReceiptModal({ donation, member, onClose }: Props) {
+export default function DonationReceiptModal({ donation, member, onClose, onOpenGmail }: Props) {
+  const [thakorjiImg] = useThakorjiImage();
   const handlePrint = () => {
     window.print();
   };
@@ -21,7 +24,17 @@ export default function DonationReceiptModal({ donation, member, onClose }: Prop
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             <span>દાન પાવતી / સત્તાવાર રસીદ (Official Receipt)</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {onOpenGmail && (
+              <button
+                onClick={onOpenGmail}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-lg text-xs sm:text-sm font-semibold transition-colors cursor-pointer shadow-xs"
+                title="Gmail માં રસીદ વિગતો જુઓ અને મોકલો"
+              >
+                <Mail className="w-4 h-4 text-amber-700" />
+                <span>Gmail રસીદ</span>
+              </button>
+            )}
             <button
               onClick={handlePrint}
               className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer shadow-xs"
@@ -43,11 +56,11 @@ export default function DonationReceiptModal({ donation, member, onClose }: Prop
           <div className="border-4 border-double border-amber-600/60 rounded-xl p-6 bg-white shadow-xs">
             {/* Top Emblem & Header */}
             <div className="text-center border-b-2 border-amber-200 pb-4 mb-5">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white mb-2 border-2 border-amber-300 shadow-xs p-1">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-50 mb-2 border-2 border-amber-300 shadow-xs p-0.5 overflow-hidden ring-2 ring-amber-400/30">
                 <img 
-                  src="/baps-logo.png" 
-                  alt="BAPS Swaminarayan Sanstha Logo" 
-                  className="w-full h-full object-contain bg-white rounded-full" 
+                  src={thakorjiImg || "/swaminarayan-logo.png"} 
+                  alt="શ્રી સ્વામિનારાયણ ભગવાન" 
+                  className="w-full h-full object-cover rounded-full" 
                   referrerPolicy="no-referrer" 
                 />
               </div>
